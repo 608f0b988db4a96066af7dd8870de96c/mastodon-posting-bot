@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
-# -*- encoding: utf-8 -*-
 
-import os
-import os.path
 import time
-import json
+from os.path import isfile
+
 import requests
 from mastodon import Mastodon
 
@@ -34,37 +32,34 @@ def login():
 def post_image(image_source, original_source, mastodon):
     with open('temp.jpg', 'wb') as f:
         f.write(requests.get(image_source).content)
-    mastodon.status_post(status='%s' %original_source, media_ids = [mastodon.media_post(media) for media in ['temp.jpg']])
+    mastodon.status_post(status='{}'.format(original_source), media_ids = [mastodon.media_post(media) for media in ['temp.jpg']])
 
-def main():
-    mastodon = login()
 
-    if not os.path.isfile(LAST_POSTED):
-        post_image(json_parse(SOURCE, 0)[0], json_parse(SOURCE, 0)[1], mastodon)
+mastodon = login()
+
+if not isfile(LAST_POSTED):
+    post_image(json_parse(SOURCE, 0)[0], json_parse(SOURCE, 0)[1], mastodon)
+    with open(LAST_POSTED, 'w') as f:
+        f.write(json_parse(SOURCE, 0)[0])
+
+while True:
+    last_image_source = json_parse(SOURCE, 0)[0]
+    with open(LAST_POSTED, 'r') as f:
+        last_posted_image = f.read()
+
+    if last_image_source != last_posted_image:
+        for i in range(0, 99):
+            if last_posted_image == json_parse(SOURCE, i)[0]:
+                current_number = i
+                break
+
+        if current_number == None:
+            current_number = 1
+
+        for i in range(current_number - 1, -1, -1):
+            post_image(json_parse(SOURCE, i)[0], json_parse(SOURCE, i)[1], mastodon)
         with open(LAST_POSTED, 'w') as f:
-            f.write(json_parse(SOURCE, 0)[0])
-
-    while True:
-        last_image_source = json_parse(SOURCE, 0)[0]
-        with open(LAST_POSTED, 'r') as f:
-            last_posted_image = f.read()
-
-        if last_image_source != last_posted_image:
-            for i in range(0, 99):
-                if last_posted_image == json_parse(SOURCE, i)[0]:
-                    current_number = i
-                    break
-
-            if current_number == None:
-                current_number = 1
-
-            for i in range(current_number - 1, -1, -1):
-                post_image(json_parse(SOURCE, i)[0], json_parse(SOURCE, i)[1], mastodon)
-            with open(LAST_POSTED, 'w') as f:
-                f.write(last_image_source)
-        else:
-            print('Zzz... %s' %time.strftime('%X %x'))
-            time.sleep(3600)
-
-if __name__ == '__main__':
-    main()
+            f.write(last_image_source)
+    else:
+        print('Zzz... {}'.format(time.strftime('%X %x')))
+        time.sleep(3600)
