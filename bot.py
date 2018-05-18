@@ -9,7 +9,7 @@ from mastodon import Mastodon
 SOURCE = 'https://gelbooru.com/index.php?page=dapi&s=post&q=index&tags=loli+-animated&json=1'
 CLIENT_ID = 'client_id.secret'
 ACCESS_TOKEN = 'token.secret'
-API_BASE_URL = 'https://baraag.net'
+API_BASE_URL = 'https://cap.moe'
 LAST_POSTED = 'src'
 
 def json_parse(source, image_number):
@@ -32,7 +32,7 @@ def login():
 def post_image(image_source, original_source, mastodon):
     with open('temp.jpg', 'wb') as f:
         f.write(requests.get(image_source).content)
-    mastodon.status_post(status='{}'.format(original_source), media_ids = [mastodon.media_post(media) for media in ['temp.jpg']])
+    mastodon.status_post(status='#nsfw #loli {}'.format(original_source), media_ids = [mastodon.media_post(media) for media in ['temp.jpg']])
 
 
 mastodon = login()
