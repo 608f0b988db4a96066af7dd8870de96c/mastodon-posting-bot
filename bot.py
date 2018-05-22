@@ -48,13 +48,12 @@ while True:
         last_posted_image = f.read()
 
     if last_image_source != last_posted_image:
+        current_number = 1
+
         for i in range(0, 99):
             if last_posted_image == json_parse(SOURCE, i)[0]:
                 current_number = i
                 break
-
-        if current_number == None:
-            current_number = 1
 
         for i in range(current_number - 1, -1, -1):
             post_image(json_parse(SOURCE, i)[0], json_parse(SOURCE, i)[1], mastodon)
